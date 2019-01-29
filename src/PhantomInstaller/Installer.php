@@ -405,33 +405,20 @@ class Installer
      */
     public function dropClassWithPathToInstalledBinary($binaryPath)
     {
-        $code = "<?php\n";
-        $code .= "\n";
-        $code .= "namespace PhantomInstaller;\n";
-        $code .= "\n";
-        $code .= "class PhantomBinary\n";
-        $code .= "{\n";
-        $code .= "    const BIN = '%binary%';\n";
-        $code .= "    const DIR = '%binary_dir%';\n";
-        $code .= "\n";
-        $code .= "    public static function getBin() {\n";
-        $code .= "        return self::BIN;\n";
-        $code .= "    }\n";
-        $code .= "\n";
-        $code .= "    public static function getDir() {\n";
-        $code .= "        return self::DIR;\n";
-        $code .= "    }\n";
-        $code .= "}\n";
-
-        // binary      = full path to the binary
-        // binary_dir  = the folder the binary resides in
-        $fileContent = str_replace(
-            array('%binary%', '%binary_dir%'),
-            array($binaryPath, dirname($binaryPath)),
-            $code
+        $classFile = __DIR__ . '/PhantomBinary.php';
+        $classContent = file_get_contents($classFile);
+        $dirPath = dirname($binaryPath);
+        $search = array(
+            '/const BIN = .*/',
+            '/const DIR = .*'
         );
+        $replace = array(
+            "const BIN = '{$binaryPath}';",
+            "const DIR = '{$dirPath}';"
+        );
+        $fileContent = prep_replace($search, $replace, $fileContent);
 
-        return (bool)file_put_contents(__DIR__ . '/PhantomBinary.php', $fileContent);
+        return (bool)file_put_contents($classFile, $fileContent);
     }
 
     /**
